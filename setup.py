@@ -5,14 +5,27 @@ import subprocess
 import sys
 import tarfile
 import urllib.request
+import shutil
+import site
 from setuptools.command.install import install
 
 class CustomInstallCommand(install):
-    """Custom install command to download and install Zeo++."""
+    """Custom install command to download and install Zeo++ and its Python wrapper."""
     
     def run(self):
+        # Check if running in a virtualenv
+        if not self.is_virtualenv():
+            print("ERROR: Installation must be performed within a virtualenv.")
+            print("Please create and activate a virtualenv, then try again.")
+            sys.exit(1)
+            
         # First, run the standard install command
         install.run(self)
+        
+        # Check if Zeo++ is already installed
+        if self.is_zeopp_installed():
+            print("Zeo++ is already installed. Skipping installation.")
+            return
         
         # Then install Zeo++ if on Linux
         if platform.system() != "Linux":
@@ -24,13 +37,35 @@ class CustomInstallCommand(install):
             self.install_zeopp()
             print("Zeo++ installation complete.")
         except Exception as e:
-            print(f"ERROR installing Zeo++: {e}")
+            print(f"ERROR during installation: {e}")
             print("Please install Zeo++ manually from http://www.zeoplusplus.org/")
+    
+    def is_virtualenv(self):
+        """Check if running in a virtualenv."""
+        # Check for virtualenv or venv
+        return (
+            hasattr(sys, 'real_prefix') or 
+            (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix)
+        )
+    
+    def get_virtualenv_path(self):
+        """Get the path to the current virtualenv."""
+        return sys.prefix
+    
+    def is_zeopp_installed(self):
+        """Check if Zeo++ is already installed."""
+        try:
+            # Check if the 'network' executable is in virtualenv's bin directory
+            venv_bin = os.path.join(self.get_virtualenv_path(), 'bin')
+            network_path = os.path.join(venv_bin, 'network')
+            return os.path.exists(network_path) and os.access(network_path, os.X_OK)
+        except:
+            return False
     
     def install_zeopp(self):
         """Download and install Zeo++"""
-        # Create directory for installation
-        install_dir = os.path.expanduser('~/.local/bin')
+        # Get virtualenv installation directory
+        install_dir = os.path.join(self.get_virtualenv_path(), 'bin')
         os.makedirs(install_dir, exist_ok=True)
         
         # Download Zeo++
@@ -44,22 +79,31 @@ class CustomInstallCommand(install):
         print("Extracting Zeo++...")
         zeopp_dir = os.path.join(install_dir, "zeo++-0.3")
         if os.path.exists(zeopp_dir):
-            import shutil
             shutil.rmtree(zeopp_dir)
             
         with tarfile.open(zeopp_tar, "r:gz") as tar:
             tar.extractall(path=install_dir)
         
+        
         # Compile Voro++
-        print("Compiling Voro++ library...")
+        print("Compiling Voro++ library ...")
         voro_dir = os.path.join(zeopp_dir, "voro++", "src")
         current_dir = os.getcwd()
         os.chdir(voro_dir)
         subprocess.check_call(["make"])
         
+        # Install Voro++ library
+        subprocess.check_call(["make", "install", f"PREFIX={install_dir}"])
+        
         # Compile Zeo++
-        print("Compiling Zeo++...")
+        print("Compiling Zeo++ ...")
         os.chdir(zeopp_dir)
+        
+        # Set environment variable to help find Voro++
+        os.environ["VOROLINKDIR"] = f"-L{install_dir}/lib"
+        os.environ["VOROINCLDIR"] = f"-I{install_dir}/include/voro++"
+        
+        # Compile
         subprocess.check_call(["make"])
         
         # Create symlink to the network executable
@@ -76,12 +120,10 @@ class CustomInstallCommand(install):
         # Return to original directory
         os.chdir(current_dir)
         
-        # Check if install_dir is in PATH
-        if install_dir not in os.environ.get("PATH", "").split(os.pathsep):
-            print(f"\nWARNING: {install_dir} is not in your PATH.")
-            print(f"Please add it to your PATH to use Zeo++ by adding this to your shell profile:")
-            print(f"export PATH=\"{install_dir}:$PATH\"")
-
+        # Since we're installing to the virtualenv's bin directory, which should 
+        # already be in the PATH when the virtualenv is active, no need to warn about PATH
+    
+    
 setup(
     name="topology",
     version="0.4.0",
@@ -104,7 +146,9 @@ setup(
         "monty>=2021.0.0",
         "pandas>=1.2.0",
         "ruamel.yaml>=0.17.0",
+        "pyzeo>=0.1",
         "prettytable>=2.0.0",
+        "cython>=0.29.0",  # Added for the Python wrapper
     ],
     package_data={
         "Topological_Analysis": ["files/*.yaml"],
