@@ -15,7 +15,7 @@ import time
 import numpy as np
 
 # Topological_Analysis dependencies
-from Topological_Analysis.ZeoExtendFunctions import get_voronoi_percolate_nodes, get_voronoi_node_edge, get_percolated_node_edge
+from .ZeoExtendFunctions import get_voronoi_percolate_nodes, get_voronoi_node_edge, get_percolated_node_edge
 
 # Pymatgen dependencies
 from pymatgen.io.zeopp import get_free_sphere_params

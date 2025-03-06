@@ -19,7 +19,7 @@ from pymatgen.core.structure import Structure
 from pymatgen.core.lattice import Lattice
 from pymatgen.io.zeopp import ZeoCssr, ZeoVoronoiXYZ
 from pymatgen.core.sites import PeriodicSite
-from zeo.netstorage import AtomNetwork
+from pyzeo import AtomNetwork
 
 process = subprocess.Popen('which network'.split(), stdout=subprocess.PIPE)
 output = process.communicate()[0]
