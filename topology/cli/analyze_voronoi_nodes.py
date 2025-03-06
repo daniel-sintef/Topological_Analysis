@@ -117,7 +117,7 @@ def analyze_voronoi_nodes(args):
     f.close()
     
     # target specie
-    sp = Specie.from_string(input_parameters['SPECIE'])
+    sp = Specie.from_str(input_parameters['SPECIE'])
     
     # other possible parameters
     if 'ANION' in list(input_parameters.keys()):
