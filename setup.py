@@ -92,33 +92,46 @@ class CustomInstallCommand(install):
         os.chdir(voro_dir)
         subprocess.check_call(["make"])
         
-        # Install Voro++ library
-        subprocess.check_call(["make", "install", f"PREFIX={install_dir}"])
+        # No longer installing Voro++ with 'make install'
+        # Instead, we'll set environment variables to point to the source location
+        voro_src_dir = os.path.join(zeopp_dir, "voro++")
         
         # Compile Zeo++
         print("Compiling Zeo++ ...")
         os.chdir(zeopp_dir)
         
-        # Set environment variable to help find Voro++
-        os.environ["VOROLINKDIR"] = f"-L{install_dir}/lib"
-        os.environ["VOROINCLDIR"] = f"-I{install_dir}/include/voro++"
+        # Set environment variable to help find Voro++ from its source location
+        os.environ["VOROLINKDIR"] = f"-L{voro_src_dir}/src"
+        os.environ["VOROINCLDIR"] = f"-I{voro_src_dir}/src"
         
         # Compile
         subprocess.check_call(["make"])
         
-        # Create symlink to the network executable
-        print("Creating symlink to the Zeo++ executable...")
-        network_exe = os.path.join(zeopp_dir, "network")
-        network_link = os.path.join(install_dir, "network")
-        
-        if os.path.exists(network_link):
-            os.remove(network_link)
-        
-        os.symlink(network_exe, network_link)
-        os.chmod(network_exe, 0o755)  # Make executable
+        # Move Zeo++ executables to bin directory
+        print("Moving Zeo++ executables to bin directory...")
+        for exe in ["network", "molecule_to_abstract", "framework_builder", "voro++/src/voro++"]:
+            src = os.path.join(zeopp_dir, exe)
+            dst = os.path.join(install_dir, exe)
+            
+            if os.path.exists(dst):
+                os.remove(dst)
+            
+            if os.path.exists(src):
+                shutil.copy2(src, dst)  # copy2 preserves metadata including permissions
+                os.chmod(dst, 0o755)  # Make executable
+            else:
+                print(f"Warning: Could not find {exe} executable in {zeopp_dir}")
         
         # Return to original directory
         os.chdir(current_dir)
+        
+        # Clean up: remove tar file and extracted directory
+        print("Cleaning up temporary files...")
+        if os.path.exists(zeopp_tar):
+            os.remove(zeopp_tar)
+            
+        if os.path.exists(zeopp_dir):
+            shutil.rmtree(zeopp_dir)
         
         # Since we're installing to the virtualenv's bin directory, which should 
         # already be in the PATH when the virtualenv is active, no need to warn about PATH
