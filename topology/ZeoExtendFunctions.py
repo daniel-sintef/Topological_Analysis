@@ -1,4 +1,4 @@
-from __future__ import division, unicode_literals
+
 
 """
 This module defines more function for Zeo++
@@ -54,7 +54,7 @@ def get_voronoi_percolate_nodes(structure, rad_dict=None, probe_rad=0.1):
             rad_file = name + ".rad"
             rad_flag = True
             with open(rad_file, 'w+') as fp:
-                for el in rad_dict.keys():
+                for el in list(rad_dict.keys()):
                     fp.write("{} {}\n".format(el, rad_dict[el].real))
 
         atmnet = AtomNetwork.read_from_CSSR(
@@ -142,7 +142,7 @@ def get_voronoi_node_edge(structure, rad_dict, write_nt2_file=False):
         # CifWriter(structure).write_file(cif_file) the xyz need to rotate to zxy, so just use existing ZeoCssr
         # rad_file
         with open(rad_file, 'w+') as fp:
-            for el in rad_dict.keys():
+            for el in list(rad_dict.keys()):
                 fp.write("{} {}\n".format(el, rad_dict[el].real))
         # mass_file
         struct_element_set = set(structure.composition.elements)
@@ -172,15 +172,15 @@ def get_voronoi_node_edge(structure, rad_dict, write_nt2_file=False):
     # final_frac_coords = node_frac_coords+node_image
 
     for site in node_info_string_list:
-        coords_temp = map(float, site.split()[1:4])
+        coords_temp = list(map(float, site.split()[1:4]))
         coords.append([coords_temp[1], coords_temp[2], coords_temp[0]])
         voronoi_radius.append(float(site.split()[4]))
-        neighbor_atoms_num.append(map(int, site.split()[5:]))
+        neighbor_atoms_num.append(list(map(int, site.split()[5:])))
 
     for neighbor in edge_info_string_list:
         valid_info = neighbor.split()
         valid_info.pop(1)  # there is a arrow in the output string
-        image_temp = map(int, valid_info[3:6])
+        image_temp = list(map(int, valid_info[3:6]))
         valid_info = [int(valid_info[0]), int(valid_info[1]), float(valid_info[2]),
                       [image_temp[1], image_temp[2], image_temp[0]]]
         neighbor_nodes[valid_info[0]].append(copy.deepcopy(valid_info[1:]))
@@ -217,7 +217,7 @@ def get_percolated_node_edge(origin_struct, node_struct, rad_dict, probe_rad):
             unaccess_list.append(i_index)
         else:
             access_list.append(i_index)
-    new_id = range(len(access_list))
+    new_id = list(range(len(access_list)))
     old_new_corr = {}
     for i_index, i in enumerate(access_list):
         old_new_corr[i] = new_id[i_index]

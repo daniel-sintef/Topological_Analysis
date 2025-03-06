@@ -85,9 +85,9 @@ def cmd_by_edge(node_structure, r_cut, molecular_id=None, scale=0.5):
             end_coords_frac = node_structure[nn[0]].frac_coords + nn[2]
             end_coords_cart = np.dot(end_coords_frac, node_structure.lattice.matrix)
             if np.linalg.norm(end_coords_cart - site.coords) > 8: # the edge distance may be too large
-                print 'Site Index {}; Neighbor Index {}'.format(site_i, nn[0])
-                print 'Site Frac Coords {}; Neighbor Frac Coords {}'.format(site.frac_coords, node_structure[nn[0]].frac_coords)
-                print 'Distance'.format(nn[2])
+                print('Site Index {}; Neighbor Index {}'.format(site_i, nn[0]))
+                print('Site Frac Coords {}; Neighbor Frac Coords {}'.format(site.frac_coords, node_structure[nn[0]].frac_coords))
+                print('Distance'.format(nn[2]))
             end_coords = ' '.join(map(str, end_coords_cart))
             if molecular_id:
                 cmd = 'graphics {} cylinder {{{}}} {{{}}} radius {} resolution 20\n'.format(molecular_id, start_coords, end_coords,

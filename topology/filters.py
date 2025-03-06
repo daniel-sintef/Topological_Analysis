@@ -1,4 +1,4 @@
-from __future__ import division, unicode_literals
+
 
 __author__ = "Xingfeng He, Yunsheng Liu"
 __copyright__ = "Copyright 2019, UMD Mo. Group"
@@ -53,7 +53,7 @@ class GetVoronoiNodes(MSONable):
         elems = [el for el in structure.composition.elements if el != self.sp]
         all_els = [el for el in structure.composition.elements]
         el_names = [str(el) for el in elems]
-        ex_names = [n for n in self.rs.keys()]
+        ex_names = [n for n in list(self.rs.keys())]
         
         # check if the diffusion specie exists in the structure
         if not self.sp in all_els:
@@ -62,9 +62,9 @@ class GetVoronoiNodes(MSONable):
         # check if the ionic radius is provided in dictionary for each specie
         if not (set(el_names) < set(ex_names)):
             # Note: we use < here because target diffusion specie is excluded from the element list
-            print 'More ionic radius expected:'
+            print('More ionic radius expected:')
             for i in (set(el_names) - set(ex_names)):
-                print i
+                print(i)
             raise Exception('Incomplete ionic radius dictionary.')
             
         frames = []
@@ -154,15 +154,15 @@ class OrderFrameworkFilter():
                     frame_list.append(i)
                 else:
                     radii_list = []
-                    for sps in i.species_and_occu.keys():
-                        if not sps in self.rd.keys():
-                            print 'Warning! Ionic radius not found: {}'.format(sps)
+                    for sps in list(i.species_and_occu.keys()):
+                        if not sps in list(self.rd.keys()):
+                            print('Warning! Ionic radius not found: {}'.format(sps))
                         else:
                             radii_list.append((sps, self.rd[sps]))
                     if len(radii_list) > 0:
                         radii_list = sorted(radii_list, key=lambda k: k[1]) # pick the specie with smallest radius
                     else:
-                        radii_list.append((i.species_and_occu.keys()[0], 1)) # pick the first specie
+                        radii_list.append((list(i.species_and_occu.keys())[0], 1)) # pick the first specie
                     new_i = PeriodicSite(radii_list[0][0], i.coords, i.lattice, to_unit_cell=False,
                                          coords_are_cartesian=True)
                     frame_list.append(new_i)
@@ -190,7 +190,7 @@ class OxidationStateFilter():
     @property
     def decorated(self):
         f = True
-        for el, occu in self.original_structure.composition.items():
+        for el, occu in list(self.original_structure.composition.items()):
             if isinstance(el, Element):
                 f = False
                 break
@@ -222,7 +222,7 @@ class TAPercolateFilter(MSONable):
         all_els = [el for el in structure.composition.elements]
         elems = [el for el in structure.composition.elements if el != self.sp]
         el_names = [str(el) for el in elems]
-        ex_names = [n for n in self.rs.keys()]
+        ex_names = [n for n in list(self.rs.keys())]
         
         # check if the diffusion specie exists in the structure
         if not self.sp in all_els:
@@ -231,9 +231,9 @@ class TAPercolateFilter(MSONable):
         # check if the ionic radius is provided in dictionary for each specie
         if not (set(el_names) < set(ex_names)):
             # Note: we use < here because target diffusion specie is excluded from the element list
-            print 'More ionic radius expected:'
+            print('More ionic radius expected:')
             for i in (set(el_names) - set(ex_names)):
-                print i
+                print(i)
             raise Exception('Incomplete ionic radius dictionary.')
             
         # check percolation
@@ -312,7 +312,7 @@ class TAPercolateFilter(MSONable):
     
     @property
     def analysis_keys(self):
-        return [n for n in self.voronoi_analysis.keys()]
+        return [n for n in list(self.voronoi_analysis.keys())]
 
 
 class TACoulombReplusionFilter(MSONable):
@@ -346,7 +346,7 @@ class TACoulombReplusionFilter(MSONable):
         
         # check the minimum distance to ions:
         if self.min_d >= 5:
-            print 'Warning! Minimum distance more than 5 A...'
+            print('Warning! Minimum distance more than 5 A...')
         
         # do replusion check:
         self.final_nodes = self.replusion_check()
@@ -371,7 +371,7 @@ class TACoulombReplusionFilter(MSONable):
             
             good = True
             for site in neighbor_list:
-                el, occu = site.species_and_occu.items()[0] # Note: el must be Specie, not Element
+                el, occu = list(site.species_and_occu.items())[0] # Note: el must be Specie, not Element
                 if self.prune[0].lower() == 'c': # cations
                     if el.oxi_state > 0:
                         good = False
@@ -832,7 +832,7 @@ class TALongFilter(MSONable):
             longest_d = max([struct_temp[0].distance(site) for site in struct_temp[1:]])
             sites = struct_temp.get_sites_in_sphere(struct_temp[0].coords, longest_d + 0.01, include_index=True)
             if len(sites) != struct_temp.num_sites:
-                print'There are periodic image of some sites exists, only use the nearest one'
+                print('There are periodic image of some sites exists, only use the nearest one')
                 unique_sites_index = []
                 unique_sites = []
                 for i in sites:
@@ -1105,7 +1105,7 @@ class TAOptimumSiteFilter(MSONable):
             longest_d = max([struct_temp[0].distance(site) for site in struct_temp[1:]])
             sites = struct_temp.get_sites_in_sphere(struct_temp[0].coords, longest_d + 0.01, include_index=True)
             if len(sites) != struct_temp.num_sites:
-                print'There are periodic image of some sites exists, only use the nearest one'
+                print('There are periodic image of some sites exists, only use the nearest one')
                 unique_sites_index = []
                 unique_sites = []
                 for i in sites:
