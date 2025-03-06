@@ -199,7 +199,7 @@ def analyze_voronoi_nodes(args):
                 
         elif f.lower() == 'voroperco':
             # Check whether there's enough space for percolation.
-            print('#     Check Voronoi percolation raduis.')
+            print('#     Check Voronoi percolation radius.')
             if pr:
                 VoroPerco = TAPercolateFilter(org_structure.copy(), radii, sp, pr)
             else:

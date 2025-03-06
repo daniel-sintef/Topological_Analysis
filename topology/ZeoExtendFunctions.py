@@ -72,8 +72,9 @@ def get_voronoi_percolate_nodes(structure, rad_dict=None, probe_rad=0.1):
         coords.append(list(site.coords))
         prop.append(site.properties['voronoi_radius'])
 
-    lattice = Lattice.from_lengths_and_angles(
-        structure.lattice.abc, structure.lattice.angles)
+    a, b, c = structure.lattice.abc
+    alpha, beta, gamma = structure.lattice.angles
+    lattice = Lattice.from_parameters(a, b, c, alpha, beta, gamma)
     vor_node_struct = Structure(
         lattice, species, coords, coords_are_cartesian=True,
         to_unit_cell=False, site_properties={"voronoi_radius": prop})
@@ -86,8 +87,9 @@ def get_voronoi_percolate_nodes(structure, rad_dict=None, probe_rad=0.1):
         coords.append(list(site.coords))
         prop.append(site.properties['voronoi_radius'])
 
-    lattice = Lattice.from_lengths_and_angles(
-        structure.lattice.abc, structure.lattice.angles)
+    a, b, c = structure.lattice.abc
+    alpha, beta, gamma = structure.lattice.angles
+    lattice = Lattice.from_parameters(a, b, c, alpha, beta, gamma)
     vor_accessible_node_struct = Structure(
         lattice, species, coords, coords_are_cartesian=True,
         to_unit_cell=False, site_properties={"voronoi_radius": prop})
@@ -184,8 +186,9 @@ def get_voronoi_node_edge(structure, rad_dict, write_nt2_file=False):
         valid_info = [int(valid_info[0]), int(valid_info[1]), float(valid_info[2]),
                       [image_temp[1], image_temp[2], image_temp[0]]]
         neighbor_nodes[valid_info[0]].append(copy.deepcopy(valid_info[1:]))
-    lattice = Lattice.from_lengths_and_angles(
-        structure.lattice.abc, structure.lattice.angles)
+    a, b, c = structure.lattice.abc
+    alpha, beta, gamma = structure.lattice.angles
+    lattice = Lattice.from_parameters(a, b, c, alpha, beta, gamma)
     vor_node_struct = Structure(
         lattice, species, coords, coords_are_cartesian=True,
         to_unit_cell=False, site_properties={"voronoi_radius": voronoi_radius,

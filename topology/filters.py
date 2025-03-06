@@ -25,6 +25,7 @@ from pymatgen.core.periodic_table import Specie, Element
 from pymatgen.core.structure import Structure
 from pymatgen.io.cif import CifParser, CifWriter
 
+from topology import zeo_compat
 
 class GetVoronoiNodes(MSONable):
     """
@@ -121,7 +122,7 @@ class OrderFrameworkFilter():
             new_structure = self.replace_frame.copy()
             for i in self.original_structure.copy():
                 if str(self.sp) in i.species_string:
-                    new_structure.append(i.species_and_occu, i.coords, coords_are_cartesian=True)
+                    new_structure.append(i.species, i.coords, coords_are_cartesian=True)
             new_structure.sort()
             self.virtual_structure = new_structure.copy()
         
@@ -154,7 +155,7 @@ class OrderFrameworkFilter():
                     frame_list.append(i)
                 else:
                     radii_list = []
-                    for sps in list(i.species_and_occu.keys()):
+                    for sps in list(i.species.keys()):
                         if not sps in list(self.rd.keys()):
                             print('Warning! Ionic radius not found: {}'.format(sps))
                         else:
@@ -162,7 +163,7 @@ class OrderFrameworkFilter():
                     if len(radii_list) > 0:
                         radii_list = sorted(radii_list, key=lambda k: k[1]) # pick the specie with smallest radius
                     else:
-                        radii_list.append((list(i.species_and_occu.keys())[0], 1)) # pick the first specie
+                        radii_list.append((list(i.species.keys())[0], 1)) # pick the first specie
                     new_i = PeriodicSite(radii_list[0][0], i.coords, i.lattice, to_unit_cell=False,
                                          coords_are_cartesian=True)
                     frame_list.append(new_i)
@@ -258,6 +259,9 @@ class TAPercolateFilter(MSONable):
         
         # free sphere parameters:
         free_sphere_params = get_free_sphere_params(frame_structure, rad_dict=self.rs, probe_rad=0.1)
+        #free_sphere_params example:
+        # {'inc_sph_max_dia': 1.99402, 'free_sph_max_dia': 1.08588, 'inc_sph_along_free_sph_path_max_dia': 1.85881}
+
         # update the sphere parameters to final analysis results
         results = free_sphere_params
         results['Framework'] = frame_structure.copy()
@@ -268,13 +272,13 @@ class TAPercolateFilter(MSONable):
             error = True
             # sometimes Voronoi analysis program may counter numerical errors, so better try running it for several times
             for attempts in range(5): # run for 5 times
-                try:
-                    node_struct = get_voronoi_node_edge(frame_structure, self.rs)
-                    node_struct_access = get_percolated_node_edge(frame_structure, node_struct, self.rs, self.percolate_r)
-                    error = False
-                    break
-                except:
-                    time.sleep(5) # safety first when running heavy computation loads
+                #try:
+                node_struct = get_voronoi_node_edge(frame_structure, self.rs)
+                node_struct_access = get_percolated_node_edge(frame_structure, node_struct, self.rs, self.percolate_r)
+                error = False
+                break
+                #except:
+                #    time.sleep(5) # safety first when running heavy computation loads
                     
             if error: # can percolate, but cannot do Voronoi analysis
                 f = open('./error.out', 'a')
@@ -371,7 +375,7 @@ class TACoulombReplusionFilter(MSONable):
             
             good = True
             for site in neighbor_list:
-                el, occu = list(site.species_and_occu.items())[0] # Note: el must be Specie, not Element
+                el, occu = list(site.species.items())[0] # Note: el must be Specie, not Element
                 if self.prune[0].lower() == 'c': # cations
                     if el.oxi_state > 0:
                         good = False
