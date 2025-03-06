@@ -136,10 +136,9 @@ class CustomInstallCommand(install):
         # Since we're installing to the virtualenv's bin directory, which should 
         # already be in the PATH when the virtualenv is active, no need to warn about PATH
     
-    
 setup(
     name="topology",
-    version="0.4.0",
+    version="0.4.1",
     author="Xingfeng He, Yunsheng Liu",
     author_email="yliu1240@umd.edu",
     description="Analyze material structures with Voronoi analysis",
@@ -164,11 +163,13 @@ setup(
         "cython>=0.29.0",  # Added for the Python wrapper
     ],
     package_data={
-        "Topological_Analysis": ["files/*.yaml"],
+        "topology": ["files/*.yaml"],
     },
-    scripts=[
-        "scripts/analyze_voronoi_nodes.py",
-    ],
+    entry_points={
+        'console_scripts': [
+            'analyze_voronoi_nodes=topology.cli.analyze_voronoi_nodes:main',
+        ],
+    },
     cmdclass={
         "install": CustomInstallCommand,
     },

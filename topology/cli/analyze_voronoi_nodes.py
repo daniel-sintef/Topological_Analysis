@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # system & I/O dependencies
 import os
 import sys
@@ -12,7 +14,7 @@ from pymatgen.io.cif import CifParser, CifWriter
 from pymatgen.core.periodic_table import Specie, Element
 from pymatgen.core.composition import Composition
 
-# Topological_Analysis dependencies
+# topology dependencies
 from topology.filters import *
 from topology.PyVMD import cmd_by_radius
 # TAPercolateFilter, TABvFilter, TALongFilter, TAOptimumSiteFilter, TACoulombReplusionFilter, OxidationStateFilter,
@@ -20,20 +22,15 @@ from topology.PyVMD import cmd_by_radius
 
 __author__ = "Xingfeng He, Yunsheng Liu"
 __copyright__ = "Copyright 2019, UMD Mo. Group"
-__version__ = "0.2"
+__version__ = "0.3"
 __maintainer__ = "Yunsheng Liu"
 __email__ = "yliu1240@umd.edu"
-__date__ = "Jun 21st, 2019"
+__date__ = "Mar 6, 2025"
 
 # Preparation
 yaml = YAML()
 
-# customized directory to specify Topological_Analysis is if it's not in PYTHONPATH or other python directory
-# base_dir = '/Users/Base/Directory'
-# if not base_dir in sys.path:
-#     sys.path.append(base_dir)
-
-def Analyze_Voronoi_Nodes(args):
+def analyze_voronoi_nodes(args):
     """
     A standard process to apply all filters. Zeo++ finds all possible polyhedrons and corresponding sites while this class
     will screen bad sites and merge them. The program currently support CIF input files ONLY;
@@ -102,14 +99,13 @@ def Analyze_Voronoi_Nodes(args):
                  2. CIF with all sites having good bond valence;
              OxidationStateFilter has no ouput structure.
     """
-    import topology 
+    # Import here to avoid circular imports
+    import pkg_resources
     
-    # built-in radius for different species
-    va_dir = os.path.dirname(topology.__file__)
-    radii_yaml_dir = os.path.join(va_dir, 'files/radii.yaml')
-    with open(radii_yaml_dir, 'r') as f:
+    # Get radii file using pkg_resources to ensure it works when installed
+    radii_yaml_path = pkg_resources.resource_filename('topology', 'files/radii.yaml')
+    with open(radii_yaml_path, 'r') as f:
         radii = yaml.load(f)
-    f.close()
     
     # read structure from CIF file
     name = args.cif_file[:-4] # the last 4 characters are '.cif'
@@ -307,13 +303,13 @@ def Analyze_Voronoi_Nodes(args):
             if not node_structure:
                 print('##    No node structure provided for long Voronoi node analysis...')
                 sys.exit()
-            elif not int:
+            elif not long:  # Changed 'int' to 'long' to fix the variable reference
                 print('##    No length provided to decide Voronoi node length...')
                 sys.exit()
             else:
                 print('#     Processing Voronoi length check.')
-                print('#     Voronoi length limitation: {} A'.format(round(int, 3)))
-                VoroLong = TALongFilter(node_structure.copy(), int, use_voro_radii=True)
+                print('#     Voronoi length limitation: {} A'.format(round(long, 3)))
+                VoroLong = TALongFilter(node_structure.copy(), long, use_voro_radii=True)  # Changed 'int' to 'long'
                 print('#     Maximum node length detected: {} A'.format(round(VoroLong.longest_node_length, 3)))
                 output_doc = {}
                 variables = ['Center_Coords', 'Node_Length']
@@ -361,7 +357,7 @@ def Analyze_Voronoi_Nodes(args):
             if not node_structure:
                 print('##    No node structure provided for optimizing sites...')
                 sys.exit()
-            if (not nn) or (not int):
+            if (not nn) or (not long):  # Changed 'int' to 'long'
                 print('##    No neighbor distance cut-off and long node cut-off provided for site optimization...')
                 sys.exit()
                 
@@ -373,7 +369,7 @@ def Analyze_Voronoi_Nodes(args):
             long_list = []
             short_list = []
             for i in cluster_list:
-                if voro_long.get_cluster_length(i, use_voro_radii=True) >= int:
+                if voro_long.get_cluster_length(i, use_voro_radii=True) >= long:  # Changed 'int' to 'long'
                     long_list.append(i)
                 else:
                     short_list.append(i)
@@ -435,9 +431,8 @@ def Analyze_Voronoi_Nodes(args):
         for lines in cmds:
             cmd_file.write(lines)
         cmd_file.close()
-        
-if __name__ == '__main__':
-    start_time = time.time()
+
+def main():
     parser = argparse.ArgumentParser(description='Voronoi analysis on structures')
     parser.add_argument("cif_file", type=str, help='CIF file directory')
     parser.add_argument("-i", "--input_file", type=str, help='Input yaml file to specify different parameters')
@@ -446,8 +441,10 @@ if __name__ == '__main__':
                         type=str, help="Default is PropOxi, VoroPerco, Coulomb, VoroBV, VoroInfo, MergeSite"
                                        "Ordered list of filters. Current only support 6 filters."
                                        "Please read README for further information")
-    # default: "Vorolong"
-    parser.set_defaults(func=Analyze_Voronoi_Nodes)
     args = parser.parse_args()
-    args.func(args)
+    start_time = time.time()
+    analyze_voronoi_nodes(args)
     print(('Total used time: {}'.format(str(time.time() - start_time))))
+
+if __name__ == '__main__':
+    main()
