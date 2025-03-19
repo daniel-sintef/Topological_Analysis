@@ -15,7 +15,7 @@ class CustomInstallCommand(install):
     def run(self):
         # Check if running in a virtualenv
         if not self.is_virtualenv():
-            print("ERROR: Installation must be performed within a virtualenv.")
+            print("ERROR: Zeo++ installation must be performed within a virtualenv.")
             print("Please create and activate a virtualenv, then try again.")
             sys.exit(1)
             
@@ -111,7 +111,8 @@ class CustomInstallCommand(install):
         print("Moving Zeo++ executables to bin directory...")
         for exe in ["network", "molecule_to_abstract", "framework_builder", "voro++/src/voro++"]:
             src = os.path.join(zeopp_dir, exe)
-            dst = os.path.join(install_dir, exe)
+            dst = os.path.join(install_dir, os.path.basename(exe))
+            print(f'moving: {src} to {dst}')
             
             if os.path.exists(dst):
                 os.remove(dst)
@@ -153,7 +154,7 @@ setup(
     ],
     python_requires=">=3.6",
     install_requires=[
-        "pymatgen>=2022.0.0",
+        "pymatgen>=2025.3.10",
         "numpy>=1.19.0",
         "monty>=2021.0.0",
         "pandas>=1.2.0",
