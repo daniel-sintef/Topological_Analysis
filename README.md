@@ -61,7 +61,7 @@ As of March 6, 2025, this code requires a patch to pymatgen that is currently un
    git clone https://github.com/materialsvirtuallab/Topological_Analysis.git
    cd Topological_Analysis
    pip install -e .  # For regular installation
-   pip install -e .[install-zeopp]  # To also install Zeo++
+   pip install .[install-zeopp]  # To also install Zeo++ (cannot use -e for zeo++ install!)
    ```
 
 ## Using the Command-Line Tool
