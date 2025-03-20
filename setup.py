@@ -162,6 +162,7 @@ setup(
         "pyzeo>=0.1",
         "prettytable>=2.0.0",
         "cython>=0.29.0",  # Added for the Python wrapper
+        "setuptools", # not included on many HPC systems
     ],
     package_data={
         "topology": ["files/*.yaml"],
