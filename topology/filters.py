@@ -836,11 +836,10 @@ class TALongFilter(MSONable):
             longest_d = max([struct_temp[0].distance(site) for site in struct_temp[1:]])
             sites = struct_temp.get_sites_in_sphere(struct_temp[0].coords, longest_d + 0.01, include_index=True)
             if len(sites) != struct_temp.num_sites:
-                print('There are periodic image of some sites exists, only use the nearest one')
                 unique_sites_index = []
                 unique_sites = []
                 for i in sites:
-                    if i[-1] not in unique_sites_index:
+                    if i[-1].tolist() not in [x.tolist() for x in unique_sites_index]:
                         unique_sites_index.append(i[-1])
                         unique_sites.append(i)
                 position = sum(i[0].coords for i in unique_sites) / (len(unique_sites))
@@ -1109,11 +1108,11 @@ class TAOptimumSiteFilter(MSONable):
             longest_d = max([struct_temp[0].distance(site) for site in struct_temp[1:]])
             sites = struct_temp.get_sites_in_sphere(struct_temp[0].coords, longest_d + 0.01, include_index=True)
             if len(sites) != struct_temp.num_sites:
-                print('There are periodic image of some sites exists, only use the nearest one')
+                print('There are periodic image of some sites exists, only use the nearest one 2')
                 unique_sites_index = []
                 unique_sites = []
                 for i in sites:
-                    if i[-1] not in unique_sites_index:
+                    if i[-1].tolist() not in [x.tolist() for x in unique_sites_index]:
                         unique_sites_index.append(i[-1])
                         unique_sites.append(i)
                 position = sum(i[0].coords for i in unique_sites) / (len(unique_sites))
